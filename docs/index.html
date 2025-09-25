@@ -30,6 +30,15 @@
         min-height: 200px; /* Added minimum height */
       }
       
+      .rules {
+        background: white;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        max-width: 400px;
+        margin-top: 15px; /* Space between instructions and rules */
+      }
+      
       .instructions h2 {
         margin-top: 0;
         color: #333;
@@ -42,11 +51,37 @@
         font-size: 1em;
       }
       
+      .rules h3 {
+        margin-top: 0;
+        margin-bottom: 10px;
+        color: #555;
+        font-size: 1em;
+      }
+      
       .instructions p {
         margin-top: 5px;
         line-height: 1.4;
         color: #666;
         font-size: 0.9em;
+      }
+      
+      .rules p {
+        margin-top: 5px;
+        line-height: 1.4;
+        color: #666;
+        font-size: 0.9em;
+      }
+      
+      .rules ul {
+        margin: 10px 0;
+        padding-left: 20px;
+        color: #666;
+        font-size: 0.9em;
+      }
+      
+      .rules li {
+        margin-bottom: 5px;
+        line-height: 1.4;
       }
       
       .canvas-container {
@@ -69,6 +104,11 @@
           max-width: 95%;
           order: -1; /* Instructions go on top */
         }
+        
+        .rules {
+          max-width: 95%;
+          order: -1; /* Rules also go on top */
+        }
       }
       
       /* Landscape mode: Side by side */
@@ -81,19 +121,51 @@
           order: 1; /* Instructions go on left */
           width: 380px; /* Increased from 280px to match new max-width */
         }
+        
+        .rules {
+          order: 1; /* Rules also go on left */
+          width: 380px;
+        }
       }
     </style>
   </head>
   <body>
     <div class="container">
       <div class="instructions">
-        <h2>Build Your Own Detector</h2>
+        <h2>Build Your Own Particle Physics Detector</h2>
         <h3>Instructions:</h3>
-        <p>To build your detector, drag detector layers into the circles.
+        <p>To build your detector, drag detector layers (big "x") into the circles.
             <br> Each layer is responsible for detecting different types of particles.
             <br> Press SPACE or "Fire Particle" to simulate a particle collision!
             <br> Press C or "Clear Tracks" to clear all tracks.</p>
       </div>
+      
+      <div class="rules">
+        <h3>Game Rules:</h3>
+        <ul>
+          <li><strong>Goal:</strong> Build a detector that can identify different particle types!</li>
+        </ul>
+        <h3> Glossary:</h3>
+        <ul>
+          <li><strong>ECAL (Electromagnetic Calorimeter):</strong> Detects and measures energy of photons and electrons by absorbing them.</li>
+          <li><strong>HCAL (Hadronic Calorimeter):</strong> Detects and measures energy of hadrons (like protons and neutrons) by absorbing them.</li>
+          <li><strong>Magnet:</strong> Creates a magnetic field that causes charged particles to curve, helping to determine their charge (and momentum).</li>
+          <li><strong>Muon chambers:</strong> Detect muon tracks, which can penetrate through other layers.</li>
+          <li><strong>Tracker:</strong> Measures the trajectory of charged particles as they pass through different layers.</li>
+        </ul>
+        <h3> Particle types:</h3>
+        <ul>
+          <li><strong>Photons</strong> - Are the lightest particles and get absorbed by ECAL, HCAL, Magnet. They have no charge, so they don't curve in the magnetic field.</li>
+          <li><strong>Electrons</strong> - Just as photons, they get absorbed by ECAL, HCAL, Magnet, and Muon chambers. However, they are charged and will curve in the magnetic field.</li>
+          <li><strong>Hadrons</strong> - Heavier particles, and get absorbed by HCAL, Magnet, Muon chambers.</li>
+          <li><strong>Muons</strong> - Pass through all the layers, but leave signal in the Muon chambers.</li>
+        </ul>
+        <h3> More info:</h3>
+        <ul>
+          <li><strong><a href="https://lv.wikipedia.org/wiki/Kompaktais_mionu_soleno%C4%ABds" target="_blank">Kompaktais miona solenoīds (Wikipedia)</a></strong></li>
+        </ul>
+      </div>
+      
       <div class="canvas-container" id="canvas-container">
         <!-- Canvas will be inserted here by p5.js -->
       </div>

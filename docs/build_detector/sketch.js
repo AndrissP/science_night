@@ -418,9 +418,18 @@ class Part {
   }
   
   display() {
-    fill(this.c);
-    ellipse(this.x, this.y, 40 * scaleFactor, 40 * scaleFactor);
+    // Draw an "X" instead of circle
+    stroke(this.c);
+    strokeWeight(4 * scaleFactor);
+    let size = 15 * scaleFactor; // Half the size of the X
+    
+    // Draw the X with two diagonal lines
+    line(this.x - size, this.y - size, this.x + size, this.y + size); // Top-left to bottom-right
+    line(this.x - size, this.y + size, this.x + size, this.y - size); // Bottom-left to top-right
+    
+    // Draw the text label
     fill(0);
+    noStroke();
     textAlign(CENTER);
     textSize(max(10, 12 * scaleFactor));
     text(this.name, this.x, this.y + 30 * scaleFactor);
