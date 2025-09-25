@@ -45,10 +45,22 @@ function scaleUIElements() {
 }
 
 function windowResized() {
-  // Recalculate canvas size
-  let maxWidth = windowWidth * 0.95;
-  let maxHeight = windowHeight * 0.85;
-  canvasSize = min(maxWidth, maxHeight, baseSize);
+  // Recalculate canvas size with orientation-aware layout
+  let isPortrait = windowHeight > windowWidth;
+  
+  let maxWidth, maxHeight;
+  
+  if (isPortrait) {
+    // Portrait: instructions on top
+    maxWidth = windowWidth * 0.95;
+    maxHeight = windowHeight * 0.70; // Leave space for top instructions
+  } else {
+    // Landscape: instructions on side
+    maxWidth = windowWidth * 0.70; // Leave space for side instructions
+    maxHeight = windowHeight * 0.95;
+  }
+  
+  canvasSize = min(maxWidth, maxHeight);
   scaleFactor = canvasSize / baseSize;
   
   // Resize canvas
@@ -99,15 +111,33 @@ function drawButtons() {
 }
 
 function setup() {
-  // Calculate responsive canvas size
-  let maxWidth = windowWidth * 0.95; // 95% of window width
-  let maxHeight = windowHeight * 0.85; // 85% of window height (leave space for browser UI)
+  // Calculate responsive canvas size accounting for instructions
+  let isPortrait = windowHeight > windowWidth;
+  
+  let maxWidth, maxHeight;
+  
+  if (isPortrait) {
+    // Portrait: instructions on top, use full width
+    maxWidth = windowWidth * 0.95;
+    maxHeight = windowHeight * 0.70; // Leave space for top instructions
+  } else {
+    // Landscape: instructions on side, leave space on left
+    maxWidth = windowWidth * 0.70; // Leave space for side instructions
+    maxHeight = windowHeight * 0.95;
+  }
   
   // Keep square aspect ratio, choose smaller dimension
-  canvasSize = min(maxWidth, maxHeight, baseSize); // Cap at original size for desktop
+  canvasSize = min(maxWidth, maxHeight);
   scaleFactor = canvasSize / baseSize;
   
   createCanvas(canvasSize, canvasSize);
+  
+  // Attach canvas to the designated container
+  let canvas = document.querySelector('canvas');
+  let container = document.getElementById('canvas-container');
+  if (container && canvas) {
+    container.appendChild(canvas);
+  }
   
   // Scale UI elements
   scaleUIElements();
@@ -547,7 +577,7 @@ class Particle {
     // Draw particle
     fill(this.color);
     noStroke();
-    ellipse(this.x, this.y, 8, 8);
+    ellipse(this.x, this.y, 8 * scaleFactor, 8 * scaleFactor);
     
     // Draw current path (live trail)
     this.path.display();
