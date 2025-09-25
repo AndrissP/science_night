@@ -23,11 +23,11 @@
       
       .instructions {
         background: white;
-        padding: 25px; /* Increased from 15px for more height */
+        padding: 25px;
         border-radius: 8px;
         box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        max-width: 400px; /* Increased from 300px for more width */
-        min-height: 200px; /* Added minimum height */
+        max-width: 400px; 
+        min-height: 200px;
       }
       
       .rules {
@@ -36,7 +36,6 @@
         border-radius: 8px;
         box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         max-width: 400px;
-        margin-top: 15px; /* Space between instructions and rules */
       }
       
       .instructions h2 {
@@ -101,12 +100,14 @@
         }
         
         .instructions {
-          max-width: 95%;
+          max-width: 95%; /* Nearly full screen width */
+          width: 95%; /* Force consistent width */
           order: -1; /* Instructions go on top */
         }
         
         .rules {
-          max-width: 95%;
+          max-width: 95%; /* Nearly full screen width */
+          width: 95%; /* Force consistent width - same as instructions */
           order: -1; /* Rules also go on top */
         }
       }
