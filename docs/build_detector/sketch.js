@@ -5,7 +5,12 @@ let draggingPart = null;
 // Radii for concentric detector layers
 let layerRadii = [60, 100, 140, 180, 220];
 
-// UI Buttons
+// Responsive sizing variables
+let canvasSize;
+let scaleFactor;
+let baseSize = 600; // Original design size
+
+// UI Buttons (will be scaled)
 let fireButton = {x: 10, y: 10, w: 120, h: 40};
 let clearButton = {x: 140, y: 10, w: 100, h: 40};
 
@@ -21,45 +26,99 @@ function isPointInButton(x, y, button) {
          y >= button.y && y <= button.y + button.h;
 }
 
+function scaleUIElements() {
+  // Scale button positions and sizes
+  fireButton.x = 10 * scaleFactor;
+  fireButton.y = 10 * scaleFactor;
+  fireButton.w = 120 * scaleFactor;
+  fireButton.h = 40 * scaleFactor;
+  
+  clearButton.x = 140 * scaleFactor;
+  clearButton.y = 10 * scaleFactor;
+  clearButton.w = 100 * scaleFactor;
+  clearButton.h = 40 * scaleFactor;
+  
+  // Scale layer radii
+  for (let i = 0; i < layerRadii.length; i++) {
+    layerRadii[i] = [60, 100, 140, 180, 220][i] * scaleFactor;
+  }
+}
+
+function windowResized() {
+  // Recalculate canvas size
+  let maxWidth = windowWidth * 0.95;
+  let maxHeight = windowHeight * 0.85;
+  canvasSize = min(maxWidth, maxHeight, baseSize);
+  scaleFactor = canvasSize / baseSize;
+  
+  // Resize canvas
+  resizeCanvas(canvasSize, canvasSize);
+  
+  // Rescale UI elements
+  scaleUIElements();
+  
+  // Update part positions
+  let toolboxY = canvasSize * 0.91;
+  if (parts.length > 0) {
+    parts[0].x = canvasSize * 0.45; parts[0].y = toolboxY;  // Magnet
+    parts[1].x = canvasSize * 0.567; parts[1].y = toolboxY; // ECAL
+    parts[2].x = canvasSize * 0.683; parts[2].y = toolboxY; // HCAL
+    parts[3].x = canvasSize * 0.8; parts[3].y = toolboxY;   // Muon
+    parts[4].x = canvasSize * 0.917; parts[4].y = toolboxY; // Tracker
+  }
+}
+
 function drawButtons() {
   // Fire particle button
   fill(100, 255, 100);
   stroke(50);
-  strokeWeight(2);
-  rect(fireButton.x, fireButton.y, fireButton.w, fireButton.h, 5);
+  strokeWeight(2 * scaleFactor);
+  rect(fireButton.x, fireButton.y, fireButton.w, fireButton.h, 5 * scaleFactor);
   
   fill(0);
   noStroke();
   textAlign(CENTER);
-  textSize(14);
+  textSize(max(12, 14 * scaleFactor)); // Minimum 12px for readability
   textStyle(BOLD);
-  text("Fire Particle", fireButton.x + fireButton.w/2, fireButton.y + fireButton.h/2 + 5);
+  text("Fire Particle", fireButton.x + fireButton.w/2, fireButton.y + fireButton.h/2 + 5 * scaleFactor);
   
   // Clear tracks button
   fill(255, 100, 100);
   stroke(50);
-  strokeWeight(2);
-  rect(clearButton.x, clearButton.y, clearButton.w, clearButton.h, 5);
+  strokeWeight(2 * scaleFactor);
+  rect(clearButton.x, clearButton.y, clearButton.w, clearButton.h, 5 * scaleFactor);
   
   fill(0);
   noStroke();
   textAlign(CENTER);
-  textSize(14);
+  textSize(max(12, 14 * scaleFactor)); // Minimum 12px for readability
   textStyle(BOLD);
-  text("Clear Tracks", clearButton.x + clearButton.w/2, clearButton.y + clearButton.h/2 + 5);
+  text("Clear Tracks", clearButton.x + clearButton.w/2, clearButton.y + clearButton.h/2 + 5 * scaleFactor);
   
   strokeWeight(1); // Reset stroke weight
 }
 
 function setup() {
-  createCanvas(600, 600);
+  // Calculate responsive canvas size
+  let maxWidth = windowWidth * 0.95; // 95% of window width
+  let maxHeight = windowHeight * 0.85; // 85% of window height (leave space for browser UI)
+  
+  // Keep square aspect ratio, choose smaller dimension
+  canvasSize = min(maxWidth, maxHeight, baseSize); // Cap at original size for desktop
+  scaleFactor = canvasSize / baseSize;
+  
+  createCanvas(canvasSize, canvasSize);
+  
+  // Scale UI elements
+  scaleUIElements();
   
   // Create draggable parts (tracker, ECAL, HCAL, muon, magnet)
-  parts.push(new Part("Magnet", color(255, 50, 150), 270, 547));
-  parts.push(new Part("ECAL", color(255, 200, 0), 340, 547));
-  parts.push(new Part("HCAL", color(255, 100, 0), 410, 547));
-  parts.push(new Part("Muon\n chamber", color(100, 255, 100), 480, 547));
-  parts.push(new Part("Tracker", color(0, 200, 255), 550, 547));
+  let toolboxY = canvasSize * 0.91; // Position at 91% of canvas height
+  parts.push(new Part("Magnet", color(255, 50, 150), canvasSize * 0.45, toolboxY));
+  parts.push(new Part("ECAL", color(255, 200, 0), canvasSize * 0.567, toolboxY));
+  parts.push(new Part("HCAL", color(255, 100, 0), canvasSize * 0.683, toolboxY));
+  parts.push(new Part("Muon\n chamber", color(100, 255, 100), canvasSize * 0.8, toolboxY));
+  parts.push(new Part("Tracker", color(0, 200, 255), canvasSize * 0.917, toolboxY));
 }
 
 function draw() {
@@ -69,13 +128,13 @@ function draw() {
   noFill();
   stroke(150);
   for (let r of layerRadii) {
-    ellipse(width/2, height/2, 2*r, 2*r);
+    ellipse(canvasSize/2, canvasSize/2, 2*r, 2*r);
   }
   
   // Draw placed parts
   for (let p of placedParts) {
     if (p) { // Only draw if part exists (not undefined)
-      p.drawAt(width/2, height/2);
+      p.drawAt(canvasSize/2, canvasSize/2);
     }
   }
   
@@ -133,7 +192,7 @@ function draw() {
   if (frameCount % 60 < 30) { // Blinking effect
     fill(255, 0, 0, 100);
     noStroke();
-    ellipse(width/2, height/2, 8, 8);
+    ellipse(canvasSize/2, canvasSize/2, 8 * scaleFactor, 8 * scaleFactor);
   }
 }
 
@@ -167,9 +226,9 @@ function mouseDragged() {
 function mouseReleased() {
   if (draggingPart) {
     // Snap to closest ring if dropped near detector center
-    let d = dist(mouseX, mouseY, width/2, height/2);
+    let d = dist(mouseX, mouseY, canvasSize/2, canvasSize/2);
     for (let i = 0; i < layerRadii.length; i++) {
-      if (abs(d - layerRadii[i]) < 20) {
+      if (abs(d - layerRadii[i]) < 20 * scaleFactor) {
         placedParts[i] = draggingPart;
         draggingPart = null;
         return;
@@ -216,78 +275,94 @@ function clearTracks() {
 }
 
 function drawParticleLegend() {
+  let legendWidth = 140 * scaleFactor;
+  let legendHeight = 120 * scaleFactor;
+  let legendX = canvasSize - legendWidth - (10 * scaleFactor);
+  let legendY = 10 * scaleFactor;
+  
   // Legend background
   fill(255, 255, 255, 200);
   stroke(100);
   strokeWeight(1);
-  rect(width - 150, 10, 140, 120);
+  rect(legendX, legendY, legendWidth, legendHeight);
   
   // Legend title
   fill(0);
   noStroke();
   textAlign(LEFT);
-  textSize(14);
+  textSize(max(12, 14 * scaleFactor));
   textStyle(BOLD);
-  text("Particle Types:", width - 145, 30);
+  text("Particle Types:", legendX + (5 * scaleFactor), legendY + (20 * scaleFactor));
   
-  textSize(12);
+  textSize(max(10, 12 * scaleFactor));
   textStyle(NORMAL);
+  
+  let lineY = legendY + (35 * scaleFactor);
+  let lineSpacing = 15 * scaleFactor;
   
   // Photon entry
   stroke(255, 255, 0);
-  strokeWeight(3);
-  line(width - 145, 45, width - 125, 45);
+  strokeWeight(3 * scaleFactor);
+  line(legendX + (5 * scaleFactor), lineY, legendX + (25 * scaleFactor), lineY);
   fill(0);
   noStroke();
-  text("Photon (neutral)", width - 120, 49);
+  text("Photon (neutral)", legendX + (30 * scaleFactor), lineY + (4 * scaleFactor));
   
+  lineY += lineSpacing;
   // Electron entry
   stroke(0, 255, 0);
-  strokeWeight(3);
-  line(width - 145, 60, width - 125, 60);
+  strokeWeight(3 * scaleFactor);
+  line(legendX + (5 * scaleFactor), lineY, legendX + (25 * scaleFactor), lineY);
   fill(0);
   noStroke();
-  text("Electron (+)", width - 120, 64);
+  text("Electron (+)", legendX + (30 * scaleFactor), lineY + (4 * scaleFactor));
   
+  lineY += lineSpacing;
   // Muon entry
   stroke(0, 255, 255);
-  strokeWeight(3);
-  line(width - 145, 75, width - 125, 75);
+  strokeWeight(3 * scaleFactor);
+  line(legendX + (5 * scaleFactor), lineY, legendX + (25 * scaleFactor), lineY);
   fill(0);
   noStroke();
-  text("Muon (-)", width - 120, 79);
+  text("Muon (-)", legendX + (30 * scaleFactor), lineY + (4 * scaleFactor));
   
+  lineY += lineSpacing;
   // Hadron entry
   stroke(255, 0, 255);
-  strokeWeight(3);
-  line(width - 145, 90, width - 125, 90);
+  strokeWeight(3 * scaleFactor);
+  line(legendX + (5 * scaleFactor), lineY, legendX + (25 * scaleFactor), lineY);
   fill(0);
   noStroke();
-  text("Hadron (±)", width - 120, 94);
+  text("Hadron (±)", legendX + (30 * scaleFactor), lineY + (4 * scaleFactor));
   
   // Magnetic field note
-  textSize(12);
+  textSize(max(9, 12 * scaleFactor));
   fill(100);
-  text("Magnetic field:", width - 145, 109);
-  text("into the page (⊗)", width - 145, 121);
+  text("Magnetic field:", legendX + (5 * scaleFactor), lineY + (24 * scaleFactor));
+  text("into the page (⊗)", legendX + (5 * scaleFactor), lineY + (36 * scaleFactor));
   
   strokeWeight(1); // Reset stroke weight
 }
 
 function drawDetectorToolbox() {
+  let toolboxX = 20 * scaleFactor;
+  let toolboxY = canvasSize * 0.875; // 87.5% down the canvas
+  let toolboxW = canvasSize - (40 * scaleFactor); // Full width minus margins
+  let toolboxH = 70 * scaleFactor;
+  
   // Draw rectangle around detector parts area
   stroke(100);
-  strokeWeight(2);
+  strokeWeight(2 * scaleFactor);
   fill(255, 255, 255, 50); // Light transparent background
-  rect(20, 525, 570, 70); // Rectangle around the toolbox area
+  rect(toolboxX, toolboxY, toolboxW, toolboxH);
   
   // Label for detector parts
   fill(0);
   noStroke();
   textAlign(LEFT);
-  textSize(14);
+  textSize(max(12, 14 * scaleFactor));
   textStyle(BOLD);
-  text("Detector Layers:", 25, 550);
+  text("Detector Layers:", toolboxX + (5 * scaleFactor), toolboxY + (25 * scaleFactor));
   
   strokeWeight(1); // Reset stroke weight
 }
@@ -299,7 +374,7 @@ function fireParticle() {
   console.log("Particle fired:", particleType);
   
   // Create new particle from center with random direction
-  let particle = new Particle(particleType, width/2, height/2);
+  let particle = new Particle(particleType, canvasSize/2, canvasSize/2);
   activeParticles.push(particle);
 }
 
@@ -314,21 +389,21 @@ class Part {
   
   display() {
     fill(this.c);
-    ellipse(this.x, this.y, 40, 40);
+    ellipse(this.x, this.y, 40 * scaleFactor, 40 * scaleFactor);
     fill(0);
     textAlign(CENTER);
-    textSize(12);
-    text(this.name, this.x, this.y + 30);
+    textSize(max(10, 12 * scaleFactor));
+    text(this.name, this.x, this.y + 30 * scaleFactor);
   }
   
   isMouseOver() {
-    return dist(mouseX, mouseY, this.x, this.y) < 20;
+    return dist(mouseX, mouseY, this.x, this.y) < 20 * scaleFactor;
   }
   
   drawAt(cx, cy) {
     noFill();
     stroke(this.c);
-    strokeWeight(8);
+    strokeWeight(8 * scaleFactor);
     ellipse(cx, cy, 2*layerRadii[placedParts.indexOf(this)], 2*layerRadii[placedParts.indexOf(this)]);
     strokeWeight(1);
   }
@@ -393,7 +468,7 @@ class Particle {
     if (this.finished) return;
     
     // Check if we're inside a magnetic field
-    let distFromCenter = dist(this.x, this.y, width/2, height/2);
+    let distFromCenter = dist(this.x, this.y, canvasSize/2, canvasSize/2);
     let wasInsideMagnet = this.insideMagnet;
     this.insideMagnet = false;
     
@@ -452,7 +527,7 @@ class Particle {
     // Check for interactions with detector layers
     for (let i = 0; i < placedParts.length; i++) {
       let part = placedParts[i];
-      if (part && abs(distFromCenter - layerRadii[i]) < 5) {
+      if (part && abs(distFromCenter - layerRadii[i]) < 5 * scaleFactor) {
         // Check if we haven't already interacted with this layer
         if (!this.interactions.includes(i)) {
           this.interactions.push(i);
@@ -462,7 +537,7 @@ class Particle {
     }
     
     // Particle disappears when it reaches canvas edge
-    if (this.x < 0 || this.x > width || this.y < 0 || this.y > height) {
+    if (this.x < 0 || this.x > canvasSize || this.y < 0 || this.y > canvasSize) {
       this.finished = true;
       // Don't add trail here - it will be added in draw() when particle finishes
     }
