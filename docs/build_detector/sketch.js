@@ -5,21 +5,61 @@ let draggingPart = null;
 // Radii for concentric detector layers
 let layerRadii = [60, 100, 140, 180, 220];
 
+// UI Buttons
+let fireButton = {x: 10, y: 10, w: 120, h: 40};
+let clearButton = {x: 140, y: 10, w: 100, h: 40};
+
 // Particle simulation variables
 let activeParticles = [];
 let particleTrails = [];
 let permanentTrails = []; // Trails that stay until cleared
 let particlePaths = []; // Store actual particle paths for curved tracks
 
+// Button helper functions
+function isPointInButton(x, y, button) {
+  return x >= button.x && x <= button.x + button.w && 
+         y >= button.y && y <= button.y + button.h;
+}
+
+function drawButtons() {
+  // Fire particle button
+  fill(100, 255, 100);
+  stroke(50);
+  strokeWeight(2);
+  rect(fireButton.x, fireButton.y, fireButton.w, fireButton.h, 5);
+  
+  fill(0);
+  noStroke();
+  textAlign(CENTER);
+  textSize(14);
+  textStyle(BOLD);
+  text("Fire Particle", fireButton.x + fireButton.w/2, fireButton.y + fireButton.h/2 + 5);
+  
+  // Clear tracks button
+  fill(255, 100, 100);
+  stroke(50);
+  strokeWeight(2);
+  rect(clearButton.x, clearButton.y, clearButton.w, clearButton.h, 5);
+  
+  fill(0);
+  noStroke();
+  textAlign(CENTER);
+  textSize(14);
+  textStyle(BOLD);
+  text("Clear Tracks", clearButton.x + clearButton.w/2, clearButton.y + clearButton.h/2 + 5);
+  
+  strokeWeight(1); // Reset stroke weight
+}
+
 function setup() {
   createCanvas(600, 600);
   
   // Create draggable parts (tracker, ECAL, HCAL, muon, magnet)
-  parts.push(new Part("Tracker", color(0, 200, 255), 270, 550));
-  parts.push(new Part("ECAL", color(255, 200, 0), 340, 550));
-  parts.push(new Part("HCAL", color(255, 100, 0), 410, 550));
-  parts.push(new Part("Muon", color(100, 255, 100), 480, 550));
-  parts.push(new Part("Magnet", color(255, 50, 150), 550, 550));
+  parts.push(new Part("Magnet", color(255, 50, 150), 270, 547));
+  parts.push(new Part("ECAL", color(255, 200, 0), 340, 547));
+  parts.push(new Part("HCAL", color(255, 100, 0), 410, 547));
+  parts.push(new Part("Muon\n chamber", color(100, 255, 100), 480, 547));
+  parts.push(new Part("Tracker", color(0, 200, 255), 550, 547));
 }
 
 function draw() {
@@ -76,6 +116,9 @@ function draw() {
     p.display();
   }
   
+  // Draw on-screen buttons
+  drawButtons();
+  
   // Draw particle legend
   drawParticleLegend();
   
@@ -95,6 +138,18 @@ function draw() {
 }
 
 function mousePressed() {
+  // Check for button clicks first
+  if (isPointInButton(mouseX, mouseY, fireButton)) {
+    fireParticle();
+    return; // Don't process drag if button was clicked
+  }
+  
+  if (isPointInButton(mouseX, mouseY, clearButton)) {
+    clearTracks();
+    return; // Don't process drag if button was clicked
+  }
+  
+  // Check for draggable parts
   for (let p of parts) {
     if (p.isMouseOver()) {
       draggingPart = p;
@@ -132,6 +187,27 @@ function keyPressed() {
   }
 }
 
+function touchStarted() {
+  // Handle touch events the same way as mouse events for buttons
+  if (isPointInButton(mouseX, mouseY, fireButton)) {
+    fireParticle();
+    return false; // Prevent default touch behavior
+  }
+  
+  if (isPointInButton(mouseX, mouseY, clearButton)) {
+    clearTracks();
+    return false; // Prevent default touch behavior
+  }
+  
+  // Handle dragging for touch devices
+  for (let p of parts) {
+    if (p.isMouseOver()) {
+      draggingPart = p;
+      return false; // Prevent default touch behavior
+    }
+  }
+}
+
 function clearTracks() {
   permanentTrails = [];
   particleTrails = [];
@@ -144,7 +220,7 @@ function drawParticleLegend() {
   fill(255, 255, 255, 200);
   stroke(100);
   strokeWeight(1);
-  rect(width - 150, 30, 140, 120);
+  rect(width - 150, 10, 140, 120);
   
   // Legend title
   fill(0);
@@ -152,7 +228,7 @@ function drawParticleLegend() {
   textAlign(LEFT);
   textSize(14);
   textStyle(BOLD);
-  text("Particle Types:", width - 145, 50);
+  text("Particle Types:", width - 145, 30);
   
   textSize(12);
   textStyle(NORMAL);
@@ -160,40 +236,40 @@ function drawParticleLegend() {
   // Photon entry
   stroke(255, 255, 0);
   strokeWeight(3);
-  line(width - 145, 65, width - 125, 65);
+  line(width - 145, 45, width - 125, 45);
   fill(0);
   noStroke();
-  text("Photon (neutral)", width - 120, 69);
+  text("Photon (neutral)", width - 120, 49);
   
   // Electron entry
   stroke(0, 255, 0);
   strokeWeight(3);
-  line(width - 145, 80, width - 125, 80);
+  line(width - 145, 60, width - 125, 60);
   fill(0);
   noStroke();
-  text("Electron (+)", width - 120, 84);
+  text("Electron (+)", width - 120, 64);
   
   // Muon entry
   stroke(0, 255, 255);
   strokeWeight(3);
-  line(width - 145, 95, width - 125, 95);
+  line(width - 145, 75, width - 125, 75);
   fill(0);
   noStroke();
-  text("Muon (-)", width - 120, 99);
+  text("Muon (-)", width - 120, 79);
   
   // Hadron entry
   stroke(255, 0, 255);
   strokeWeight(3);
-  line(width - 145, 110, width - 125, 110);
+  line(width - 145, 90, width - 125, 90);
   fill(0);
   noStroke();
-  text("Hadron (±)", width - 120, 114);
+  text("Hadron (±)", width - 120, 94);
   
   // Magnetic field note
-  textSize(10);
+  textSize(12);
   fill(100);
-  text("Magnetic field is pointed", width - 145, 129);
-  text("outside of the image", width - 145, 139);
+  text("Magnetic field:", width - 145, 109);
+  text("into the page (⊗)", width - 145, 121);
   
   strokeWeight(1); // Reset stroke weight
 }
@@ -338,7 +414,7 @@ class Particle {
       
       if (this.insideMagnet) {
         // Curve in one direction inside magnet
-        let perpAngle = atan2(this.vy, this.vx) + PI/2;
+        let perpAngle = atan2(this.vy, this.vx) - PI/2; // Changed from +PI/2 to -PI/2
         this.vx += cos(perpAngle) * magneticStrength * this.charge;
         this.vy += sin(perpAngle) * magneticStrength * this.charge;
         this.fringingSteps = 0; // Reset fringing counter when inside
@@ -351,7 +427,7 @@ class Particle {
         if (this.fringingSteps > 0) {
           // Fringe field strength decreases with distance from magnet
           let fringeStrength = magneticStrength * 1.2 * (this.fringingSteps / this.maxFringingSteps);
-          let perpAngle = atan2(this.vy, this.vx) - PI/2; // Opposite direction
+          let perpAngle = atan2(this.vy, this.vx) + PI/2; // Changed to +PI/2 (opposite of main field)
           this.vx += cos(perpAngle) * fringeStrength * this.charge;
           this.vy += sin(perpAngle) * fringeStrength * this.charge;
           this.fringingSteps--;
