@@ -228,7 +228,7 @@ function drawParticleLegend() {
   textAlign(LEFT);
   textSize(14);
   textStyle(BOLD);
-  text("Particle Types:", width - 145, 30);
+  text("Particle Types:", width - 145, 29);
   
   textSize(12);
   textStyle(NORMAL);
