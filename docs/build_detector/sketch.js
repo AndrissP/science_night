@@ -1,6 +1,7 @@
-let parts = [];
-let placedParts = [];
-let draggingPart = null;
+
+let parts = [];          // Draggable detector layers/parts
+let placedParts = [];    // Parts placed in the detector layers
+let draggingPart = null; // Currently dragged part
 
 // Radii for concentric detector layers
 let layerRadii = [60, 100, 140, 180, 220];
@@ -13,17 +14,38 @@ let baseSize = 600; // Original design size
 // UI Buttons (will be scaled)
 let fireButton = {x: 10, y: 10, w: 120, h: 40};
 let clearButton = {x: 140, y: 10, w: 100, h: 40};
+let resetButton = {x: 250, y: 10, w: 120, h: 40};
 
 // Particle simulation variables
 let activeParticles = [];
-let particleTrails = [];
-let permanentTrails = []; // Trails that stay until cleared
-let particlePaths = []; // Store actual particle paths for curved tracks
+let particleTrails = [];  // Temporary interaction effects (fade out)
+let particlePaths = [];   // Permanent particle paths (curved tracks)
 
 // Button helper functions
 function isPointInButton(x, y, button) {
   return x >= button.x && x <= button.x + button.w && 
          y >= button.y && y <= button.y + button.h;
+}
+
+// Calculate toolbox positions for detector parts
+function getToolboxPositions() {
+  let toolboxY = canvasSize * 0.91;
+  return [
+    { name: "Magnet", x: canvasSize * 0.45, y: toolboxY },
+    { name: "ECAL", x: canvasSize * 0.567, y: toolboxY },
+    { name: "HCAL", x: canvasSize * 0.683, y: toolboxY },
+    { name: "Muon\n chamber", x: canvasSize * 0.8, y: toolboxY },
+    { name: "Tracker", x: canvasSize * 0.917, y: toolboxY }
+  ];
+}
+
+// Update part positions to their toolbox locations
+function updatePartsToToolbox() {
+  let positions = getToolboxPositions();
+  for (let i = 0; i < parts.length && i < positions.length; i++) {
+    parts[i].x = positions[i].x;
+    parts[i].y = positions[i].y;
+  }
 }
 
 function scaleUIElements() {
@@ -37,6 +59,11 @@ function scaleUIElements() {
   clearButton.y = 10 * scaleFactor;
   clearButton.w = 100 * scaleFactor;
   clearButton.h = 40 * scaleFactor;
+  
+  resetButton.x = 250 * scaleFactor;
+  resetButton.y = 10 * scaleFactor;
+  resetButton.w = 120 * scaleFactor;
+  resetButton.h = 40 * scaleFactor;
   
   // Scale layer radii
   for (let i = 0; i < layerRadii.length; i++) {
@@ -69,14 +96,9 @@ function windowResized() {
   // Rescale UI elements
   scaleUIElements();
   
-  // Update part positions
-  let toolboxY = canvasSize * 0.91;
+  // Update part positions to current toolbox locations
   if (parts.length > 0) {
-    parts[0].x = canvasSize * 0.45; parts[0].y = toolboxY;  // Magnet
-    parts[1].x = canvasSize * 0.567; parts[1].y = toolboxY; // ECAL
-    parts[2].x = canvasSize * 0.683; parts[2].y = toolboxY; // HCAL
-    parts[3].x = canvasSize * 0.8; parts[3].y = toolboxY;   // Muon
-    parts[4].x = canvasSize * 0.917; parts[4].y = toolboxY; // Tracker
+    updatePartsToToolbox();
   }
 }
 
@@ -106,6 +128,19 @@ function drawButtons() {
   textSize(max(12, 14 * scaleFactor)); // Minimum 12px for readability
   textStyle(BOLD);
   text("Clear Tracks", clearButton.x + clearButton.w/2, clearButton.y + clearButton.h/2 + 5 * scaleFactor);
+  
+  // Reset detector button
+  fill(100, 150, 255);
+  stroke(50);
+  strokeWeight(2 * scaleFactor);
+  rect(resetButton.x, resetButton.y, resetButton.w, resetButton.h, 5 * scaleFactor);
+  
+  fill(0);
+  noStroke();
+  textAlign(CENTER);
+  textSize(max(12, 14 * scaleFactor)); // Minimum 12px for readability
+  textStyle(BOLD);
+  text("Reset Detector", resetButton.x + resetButton.w/2, resetButton.y + resetButton.h/2 + 5 * scaleFactor);
   
   strokeWeight(1); // Reset stroke weight
 }
@@ -142,13 +177,13 @@ function setup() {
   // Scale UI elements
   scaleUIElements();
   
-  // Create draggable parts (tracker, ECAL, HCAL, muon, magnet)
-  let toolboxY = canvasSize * 0.91; // Position at 91% of canvas height
-  parts.push(new Part("Magnet", color(255, 50, 150), canvasSize * 0.45, toolboxY));
-  parts.push(new Part("ECAL", color(255, 200, 0), canvasSize * 0.567, toolboxY));
-  parts.push(new Part("HCAL", color(255, 100, 0), canvasSize * 0.683, toolboxY));
-  parts.push(new Part("Muon\n chamber", color(100, 255, 100), canvasSize * 0.8, toolboxY));
-  parts.push(new Part("Tracker", color(0, 200, 255), canvasSize * 0.917, toolboxY));
+  // Create draggable parts with their initial toolbox positions
+  let positions = getToolboxPositions();
+  parts.push(new Part(positions[0].name, color(255, 50, 150), positions[0].x, positions[0].y));
+  parts.push(new Part(positions[1].name, color(255, 200, 0), positions[1].x, positions[1].y));
+  parts.push(new Part(positions[2].name, color(255, 100, 0), positions[2].x, positions[2].y));
+  parts.push(new Part(positions[3].name, color(100, 255, 100), positions[3].x, positions[3].y));
+  parts.push(new Part(positions[4].name, color(0, 200, 255), positions[4].x, positions[4].y));
 }
 
 function draw() {
@@ -238,6 +273,11 @@ function mousePressed() {
     return; // Don't process drag if button was clicked
   }
   
+  if (isPointInButton(mouseX, mouseY, resetButton)) {
+    resetDetector();
+    return; // Don't process drag if button was clicked
+  }
+  
   // Check for draggable parts
   for (let p of parts) {
     if (p.isMouseOver()) {
@@ -259,6 +299,13 @@ function mouseReleased() {
     let d = dist(mouseX, mouseY, canvasSize/2, canvasSize/2);
     for (let i = 0; i < layerRadii.length; i++) {
       if (abs(d - layerRadii[i]) < 20 * scaleFactor) {
+        // Remove the part from any previous layer position
+        for (let j = 0; j < placedParts.length; j++) {
+          if (placedParts[j] === draggingPart) {
+            placedParts[j] = null;
+          }
+        }
+        // Place the part in the new layer
         placedParts[i] = draggingPart;
         draggingPart = null;
         return;
@@ -273,6 +320,8 @@ function keyPressed() {
     fireParticle();
   } else if (key === "c" || key === "C") {
     clearTracks();
+  } else if (key === "r" || key === "R") {
+    resetDetector();
   }
 }
 
@@ -288,6 +337,11 @@ function touchStarted() {
     return false; // Prevent default touch behavior
   }
   
+  if (isPointInButton(mouseX, mouseY, resetButton)) {
+    resetDetector();
+    return false; // Prevent default touch behavior
+  }
+  
   // Handle dragging for touch devices
   for (let p of parts) {
     if (p.isMouseOver()) {
@@ -298,10 +352,34 @@ function touchStarted() {
 }
 
 function clearTracks() {
-  permanentTrails = [];
   particleTrails = [];
   particlePaths = [];
   console.log("All tracks cleared!");
+}
+
+function resetDetector() {
+  // Clear all tracks first
+  clearTracks();
+  
+  // Get current toolbox positions
+  let toolboxPositions = getToolboxPositions();
+  
+  // Move all placed parts back to their toolbox positions
+  for (let part of placedParts) {
+    if (part) { // Check if part exists (not undefined)
+      // Find the toolbox position for this part type
+      let toolboxPos = toolboxPositions.find(pos => pos.name === part.name);
+      if (toolboxPos) {
+        part.x = toolboxPos.x;
+        part.y = toolboxPos.y;
+      }
+    }
+  }
+  
+  // Clear the placed parts array
+  placedParts = [];
+  
+  console.log("Detector reset to empty state!");
 }
 
 function drawParticleLegend() {
@@ -412,13 +490,13 @@ function fireParticle() {
 class Part {
   constructor(name, c, x, y) {
     this.name = name;
-    this.c = c;
-    this.x = x;
-    this.y = y;
+    this.c = c; // color
+    this.x = x; // x-coordinate
+    this.y = y; // y-coordinate
   }
   
   display() {
-    // Draw an "X" instead of circle
+    // Draw an "X" to represent the detector part
     stroke(this.c);
     strokeWeight(4 * scaleFactor);
     let size = 15 * scaleFactor; // Half the size of the X
@@ -633,41 +711,6 @@ class Particle {
   
   isFinished() {
     return this.finished;
-  }
-}
-
-// --- Trail class ---
-class Trail {
-  constructor(x1, y1, x2, y2, c) {
-    this.x1 = x1;
-    this.y1 = y1;
-    this.x2 = x2;
-    this.y2 = y2;
-    this.color = c;
-    this.alpha = 255;
-  }
-  
-  display() {
-    stroke(red(this.color), green(this.color), blue(this.color), this.alpha);
-    strokeWeight(2);
-    line(this.x1, this.y1, this.x2, this.y2);
-  }
-}
-
-// --- Permanent Trail class ---
-class PermanentTrail {
-  constructor(x1, y1, x2, y2, c) {
-    this.x1 = x1;
-    this.y1 = y1;
-    this.x2 = x2;
-    this.y2 = y2;
-    this.color = c;
-  }
-  
-  display() {
-    stroke(red(this.color), green(this.color), blue(this.color), 200);
-    strokeWeight(2);
-    line(this.x1, this.y1, this.x2, this.y2);
   }
 }
 
