@@ -30,13 +30,13 @@ function isPointInButton(x, y, button) {
 // Calculate toolbox positions for detector parts
 function getToolboxPositions() {
   let toolboxY = canvasSize * 0.91;
-  return [
-    { name: "Magnēts", x: canvasSize * 0.45, y: toolboxY },
-    { name: "ECAL", x: canvasSize * 0.567, y: toolboxY },
-    { name: "HCAL", x: canvasSize * 0.683, y: toolboxY },
-    { name: "Mionu\n kambari", x: canvasSize * 0.8, y: toolboxY },
-    { name: "Trakeris", x: canvasSize * 0.917, y: toolboxY }
-  ];
+    return [
+      { id: "ecal", name: "ECAL", x: canvasSize * 0.45, y: toolboxY },
+      { id: "hcal", name: "HCAL", x: canvasSize * 0.567, y: toolboxY },
+      { id: "magnet", name: "Magnēts", x: canvasSize * 0.683, y: toolboxY },
+      { id: "muon", name: "Mionu\n kambari", x: canvasSize * 0.8, y: toolboxY },
+      { id: "tracker", name: "Trakeris", x: canvasSize * 0.917, y: toolboxY }
+    ];
 }
 
 // Update part positions to their toolbox locations
@@ -52,15 +52,15 @@ function scaleUIElements() {
   // Scale button positions and sizes
   fireButton.x = 10 * scaleFactor;
   fireButton.y = 10 * scaleFactor;
-  fireButton.w = 120 * scaleFactor;
+  fireButton.w = 130 * scaleFactor;
   fireButton.h = 40 * scaleFactor;
   
-  clearButton.x = 140 * scaleFactor;
+  clearButton.x = 150 * scaleFactor;
   clearButton.y = 10 * scaleFactor;
-  clearButton.w = 100 * scaleFactor;
+  clearButton.w = 120 * scaleFactor;
   clearButton.h = 40 * scaleFactor;
   
-  resetButton.x = 250 * scaleFactor;
+  resetButton.x = 280 * scaleFactor;
   resetButton.y = 10 * scaleFactor;
   resetButton.w = 120 * scaleFactor;
   resetButton.h = 40 * scaleFactor;
@@ -179,11 +179,11 @@ function setup() {
   
   // Create draggable parts with their initial toolbox positions
   let positions = getToolboxPositions();
-  parts.push(new Part(positions[0].name, color(255, 50, 150), positions[0].x, positions[0].y));
-  parts.push(new Part(positions[1].name, color(255, 200, 0), positions[1].x, positions[1].y));
-  parts.push(new Part(positions[2].name, color(255, 100, 0), positions[2].x, positions[2].y));
-  parts.push(new Part(positions[3].name, color(100, 255, 100), positions[3].x, positions[3].y));
-  parts.push(new Part(positions[4].name, color(0, 200, 255), positions[4].x, positions[4].y));
+    parts.push(new Part(positions[0].id, positions[0].name, color(255, 50, 150), positions[0].x, positions[0].y));
+    parts.push(new Part(positions[1].id, positions[1].name, color(255, 200, 0), positions[1].x, positions[1].y));
+    parts.push(new Part(positions[2].id, positions[2].name, color(255, 100, 0), positions[2].x, positions[2].y));
+    parts.push(new Part(positions[3].id, positions[3].name, color(100, 255, 100), positions[3].x, positions[3].y));
+    parts.push(new Part(positions[4].id, positions[4].name, color(0, 200, 255), positions[4].x, positions[4].y));
 }
 
 function draw() {
@@ -488,8 +488,9 @@ function fireParticle() {
 
 // --- Part class ---
 class Part {
-  constructor(name, c, x, y) {
-    this.name = name;
+  constructor(id, name, c, x, y) {
+    this.id = id; // internal identifier
+    this.name = name; // display name (Latvian)
     this.c = c; // color
     this.x = x; // x-coordinate
     this.y = y; // y-coordinate
@@ -592,7 +593,7 @@ class Particle {
     // Check if we're in a magnet layer
     for (let i = 0; i < placedParts.length; i++) {
       let part = placedParts[i];
-      if (part && part.name === "Magnet") {
+      if (part && part.name === "Magnēts") {
         if (distFromCenter <= layerRadii[i]) {
           this.insideMagnet = true;
           break;
@@ -677,22 +678,22 @@ class Particle {
     // Determine if particle interacts with this detector layer
     if (this.type === "photon" || this.type === "electron") {
       // Photons and electrons get absorbed in all dense materials except tracker
-      if (part.name !== "Tracker") {
+      if (part.id !== "tracker") {
         shouldInteract = true;
         this.finished = true; // Photon/electron gets absorbed
       }
     } else if (this.type === "hadron") {
       // Hadrons get absorbed in HCAL, Magnet, and Muon chamber
-      if (part.name === "HCAL" || part.name === "Magnet" || part.name === "Muon") {
+      if (part.id === "hcal" || part.id === "magnet" || part.id === "muon") {
         shouldInteract = true;
         this.finished = true; // Hadron gets absorbed
-      } else if (part.name === "ECAL") {
+      } else if (part.id === "ecal") {
         shouldInteract = true;
         // Hadron interacts with ECAL but doesn't get fully absorbed (some energy loss)
       }
     } else if (this.type === "muon") {
       // Muons pass through most detectors but leave signals
-      if (part.name === "Muon") {
+      if (part.id === "muon") {
         shouldInteract = true;
         // Muon passes through but leaves a signal in muon chamber
       }
