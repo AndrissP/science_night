@@ -31,11 +31,11 @@ function isPointInButton(x, y, button) {
 function getToolboxPositions() {
   let toolboxY = canvasSize * 0.91;
   return [
-    { name: "Magnet", x: canvasSize * 0.45, y: toolboxY },
+    { name: "Magnēts", x: canvasSize * 0.45, y: toolboxY },
     { name: "ECAL", x: canvasSize * 0.567, y: toolboxY },
     { name: "HCAL", x: canvasSize * 0.683, y: toolboxY },
-    { name: "Muon\n chamber", x: canvasSize * 0.8, y: toolboxY },
-    { name: "Tracker", x: canvasSize * 0.917, y: toolboxY }
+    { name: "Mionu\n kambari", x: canvasSize * 0.8, y: toolboxY },
+    { name: "Trakeris", x: canvasSize * 0.917, y: toolboxY }
   ];
 }
 
@@ -114,7 +114,7 @@ function drawButtons() {
   textAlign(CENTER);
   textSize(max(12, 14 * scaleFactor)); // Minimum 12px for readability
   textStyle(BOLD);
-  text("Fire Particle", fireButton.x + fireButton.w/2, fireButton.y + fireButton.h/2 + 5 * scaleFactor);
+  text("Šaut daļiņu", fireButton.x + fireButton.w/2, fireButton.y + fireButton.h/2 + 5 * scaleFactor);
   
   // Clear tracks button
   fill(255, 100, 100);
@@ -127,7 +127,7 @@ function drawButtons() {
   textAlign(CENTER);
   textSize(max(12, 14 * scaleFactor)); // Minimum 12px for readability
   textStyle(BOLD);
-  text("Clear Tracks", clearButton.x + clearButton.w/2, clearButton.y + clearButton.h/2 + 5 * scaleFactor);
+  text("Notīrīt trekus", clearButton.x + clearButton.w/2, clearButton.y + clearButton.h/2 + 5 * scaleFactor);
   
   // Reset detector button
   fill(100, 150, 255);
@@ -140,7 +140,7 @@ function drawButtons() {
   textAlign(CENTER);
   textSize(max(12, 14 * scaleFactor)); // Minimum 12px for readability
   textStyle(BOLD);
-  text("Reset Detector", resetButton.x + resetButton.w/2, resetButton.y + resetButton.h/2 + 5 * scaleFactor);
+  text("Attiestatīt", resetButton.x + resetButton.w/2, resetButton.y + resetButton.h/2 + 5 * scaleFactor);
   
   strokeWeight(1); // Reset stroke weight
 }
@@ -400,7 +400,7 @@ function drawParticleLegend() {
   textAlign(LEFT);
   textSize(max(12, 14 * scaleFactor));
   textStyle(BOLD);
-  text("Particle Types:", legendX + (5 * scaleFactor), legendY + (20 * scaleFactor));
+  text("Daļiņu veidi:", legendX + (5 * scaleFactor), legendY + (20 * scaleFactor));
   
   textSize(max(10, 12 * scaleFactor));
   textStyle(NORMAL);
@@ -414,7 +414,7 @@ function drawParticleLegend() {
   line(legendX + (5 * scaleFactor), lineY, legendX + (25 * scaleFactor), lineY);
   fill(0);
   noStroke();
-  text("Photon (neutral)", legendX + (30 * scaleFactor), lineY + (4 * scaleFactor));
+  text("Fotons (neitrāls)", legendX + (30 * scaleFactor), lineY + (4 * scaleFactor));
   
   lineY += lineSpacing;
   // Electron entry
@@ -423,7 +423,7 @@ function drawParticleLegend() {
   line(legendX + (5 * scaleFactor), lineY, legendX + (25 * scaleFactor), lineY);
   fill(0);
   noStroke();
-  text("Electron (+)", legendX + (30 * scaleFactor), lineY + (4 * scaleFactor));
+  text("Elektrons (+)", legendX + (30 * scaleFactor), lineY + (4 * scaleFactor));
   
   lineY += lineSpacing;
   // Muon entry
@@ -432,7 +432,7 @@ function drawParticleLegend() {
   line(legendX + (5 * scaleFactor), lineY, legendX + (25 * scaleFactor), lineY);
   fill(0);
   noStroke();
-  text("Muon (-)", legendX + (30 * scaleFactor), lineY + (4 * scaleFactor));
+  text("Mions (-)", legendX + (30 * scaleFactor), lineY + (4 * scaleFactor));
   
   lineY += lineSpacing;
   // Hadron entry
@@ -441,13 +441,13 @@ function drawParticleLegend() {
   line(legendX + (5 * scaleFactor), lineY, legendX + (25 * scaleFactor), lineY);
   fill(0);
   noStroke();
-  text("Hadron (±)", legendX + (30 * scaleFactor), lineY + (4 * scaleFactor));
+  text("Hadrons (±)", legendX + (30 * scaleFactor), lineY + (4 * scaleFactor));
   
   // Magnetic field note
   textSize(max(9, 12 * scaleFactor));
   fill(100);
-  text("Magnetic field:", legendX + (5 * scaleFactor), lineY + (24 * scaleFactor));
-  text("into the page (⊗)", legendX + (5 * scaleFactor), lineY + (36 * scaleFactor));
+  text("Magnētiskais lauks:", legendX + (5 * scaleFactor), lineY + (24 * scaleFactor));
+  text("virzīts lapā (⊗)", legendX + (5 * scaleFactor), lineY + (36 * scaleFactor));
   
   strokeWeight(1); // Reset stroke weight
 }
@@ -470,7 +470,7 @@ function drawDetectorToolbox() {
   textAlign(LEFT);
   textSize(max(12, 14 * scaleFactor));
   textStyle(BOLD);
-  text("Detector Layers:", toolboxX + (5 * scaleFactor), toolboxY + (25 * scaleFactor));
+  text("Detektora slāņi:", toolboxX + (5 * scaleFactor), toolboxY + (25 * scaleFactor));
   
   strokeWeight(1); // Reset stroke weight
 }
